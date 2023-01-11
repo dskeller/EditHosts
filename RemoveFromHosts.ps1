@@ -1,16 +1,33 @@
-﻿# By Tom Chantler - https://tomssl.com/2019/04/30/a-better-way-to-add-and-remove-windows-hosts-file-entries/
-param([string]$Hostname = "tomssl.local")
-# Remove entry from hosts file. Removes all entries that match the hostname (i.e. both IPv4 and IPv6).
-#Requires -RunAsAdministrator
+﻿#Requires -runasadministrator
+<#
+    Created by Tom Chantler - https://tomssl.com/2019/04/30/a-better-way-to-add-and-remove-windows-hosts-file-entries/
+    Updated by dskeller
+
+    Script to remove entries from windows hosts file
+
+    Version:
+    1.2
+    
+    History:
+    v1.0 2019-05-01 First commit
+    v1.1 2023-01-11 Added encoding to Out-File
+    v1.2 2023-01-11 Reformat and output only in debug mode
+#>
+[CmdletBinding()]
+param (
+  [Parameter(Mandatory = $true)]$Hostname
+)
+
+# Remove entry from hosts file (Removes all entries that match the hostname (i.e. both IPv4 and IPv6)).
 $hostsFilePath = "$($Env:WinDir)\system32\Drivers\etc\hosts"
 $hostsFile = Get-Content $hostsFilePath
-Write-Host "About to remove $Hostname from hosts file" -ForegroundColor Gray
+Write-Debug "About to remove $Hostname from hosts file"
 $escapedHostname = [Regex]::Escape($Hostname)
 If (($hostsFile) -match ".*\s+$escapedHostname.*")  {
-    Write-Host "$Hostname - removing from hosts file... " -ForegroundColor Yellow -NoNewline
+    Write-Debug "$Hostname - removing from hosts file... "
     $hostsFile -notmatch ".*\s+$escapedHostname.*" | Out-File $hostsFilePath -Encoding utf8 -Force
-    Write-Host " done"
+    Write-Debug " done"
 } 
 Else {
-    Write-Host "$Hostname - not in hosts file (perhaps already removed); nothing to do" -ForegroundColor DarkYellow
+    Write-Debug "$Hostname - not in hosts file (perhaps already removed)" 
 }
